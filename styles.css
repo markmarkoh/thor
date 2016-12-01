@@ -1,0 +1,13 @@
+html, body {
+	min-height: 100vh;
+}
+
+.map {
+	height: 100vh;
+}
+
+.bomb {
+	fill: none;
+	stroke: red;
+	stroke-width: 5px;
+}
