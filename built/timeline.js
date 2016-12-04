@@ -24772,29 +24772,38 @@ var formatter = (0, _d.timeParse)('%Y-%m-%d');
 var altFormatter = (0, _d.timeParse)('%Y%m%d');
 
 var currentSeries = 1;
+var hasStarted = false;
 var MAX_SERIES = 5;
 var bombData = {};
-var hasStarted = false;
 
 console.time('Get file');
-(0, _d.csv)("/thor/thor_series_" + currentSeries + ".csv", function (row) {
-  return {
-    date: row['MSNDATE'].indexOf('-') > -1 ? formatter(row['MSNDATE']) : altFormatter(row['MSNDATE']),
-    lat: parseFloat(row['TGTLATDD_DDD_WGS84']),
-    lng: parseFloat(row['TGTLONDDD_DDD_WGS84']),
-    weapon: row['WEAPONTYPE'] || null,
-    service: row['MILSERVICE'],
-    mission: row['FUNC_DESC'] || null,
-    craft: row['VALID_AIRCRAFT_ROOT']
-  };
-}, function (err, entries) {
-  console.timeEnd('Get file');
-  console.log('Error', err);
-  console.log('Entries', entries[0]);
-  console.log('Entries', entries[1]);
-  console.log('Entries', entries[entries.length - 5]);
-  start(entries);
-});
+
+function download() {
+  (0, _d.csv)("/thor/thor_series_" + currentSeries++ + ".csv", function (row) {
+    return {
+      date: row['MSNDATE'].indexOf('-') > -1 ? formatter(row['MSNDATE']) : altFormatter(row['MSNDATE']),
+      lat: parseFloat(row['TGTLATDD_DDD_WGS84']),
+      lng: parseFloat(row['TGTLONDDD_DDD_WGS84']),
+      weapon: row['WEAPONTYPE'] || null,
+      service: row['MILSERVICE'],
+      mission: row['FUNC_DESC'] || null,
+      craft: row['VALID_AIRCRAFT_ROOT']
+    };
+  }, function (err, entries) {
+    console.timeEnd('Get file');
+    console.log('Error', err);
+    console.log('Entries', entries[0]);
+    console.log('Entries', entries[1]);
+    console.log('Entries', entries[entries.length - 5]);
+    var firstEntry = process(entries);
+    if (!hasStarted) {
+      start(firstEntry.date);
+      hasStarted = true;
+    }
+  });
+}
+
+download();
 
 // function* bomb (entries) {
 //   let index = 0;
@@ -24812,12 +24821,38 @@ TGTTYPE
 VALID_AIRCRAFT_ROOT
 WEAPONTYPE
 */
-function start(entries) {
 
-  //const bombGen = bomb(entries)
+function start(date) {
   var main = document.getElementById('main');
-  var date = entries[0].date;
 
+  var interval = setInterval(function () {
+    var key = date.toString().split(' 00:00:00')[0];
+    var bombs = bombData[key];
+    if (bombs) {
+      main.innerHTML = "\n        <h2>" + date + "</h2>\n        <ul>" + bombs.map(function (b) {
+        return "<li>" + b.craft + " at " + b.lat + "," + b.lng + "</li>";
+      }) + "</ul>";
+    } else {
+      console.log('no bomb data', date);
+    }
+    var keysLeft = Object.keys(bombData).length;
+    if (keysLeft > 1) {
+      if (keysLeft === 200 && currentSeries < MAX_SERIES) {
+        console.log('Needs more data');
+        download();
+      }
+      console.log('Upping the day', date);
+      date = addDays(date);
+      console.log('Upped', date);
+    } else {
+      clearInterval(interval);
+      console.log('show is over');
+    }
+    delete bombData[key];
+  }, 50);
+}
+
+function process(entries) {
   // console.time('Starting crossfilter')
   // const cf = crossfilter(entries)
   // console.timeEnd('Starting crossfilter')
@@ -24831,34 +24866,16 @@ function start(entries) {
   // console.log('On this day', date)
   // console.log(byDate.filter(date))
 
-  console.time('Different group');
+  console.time('Transpose bombs');
   entries.reduce(function (acc, bomb) {
     var key = bomb.date.toString().split(' 00:00:00')[0];
     acc[key] = acc[key] || [];
     acc[key].push(bomb);
     return acc;
   }, bombData);
-  console.log(bombData);
-  console.timeEnd('Different group');
-  console.log('First day', bombData[date]);
-  var interval = setInterval(function () {
-    var key = date.toString().split(' 00:00:00')[0];
-    var bombs = bombData[key];
-    if (bombs) {
-      main.innerHTML = "\n        <h2>" + date + "</h2>\n        <ul>" + bombs.map(function (b) {
-        return "<li>" + b.craft + " at " + b.lat + "," + b.lng + "</li>";
-      }) + "</ul>";
-    }
-    if (Object.keys(bombData).length > 1) {
-      console.log('Upping the day', date);
-      date = addDays(date);
-      console.log('Upped', date);
-    } else {
-      clearInterval(interval);
-      console.log('show is over');
-    }
-    delete bombData[key];
-  }, 250);
+  console.timeEnd('Transpose bombs');
+
+  return entries[0];
 }
 
 function addDays(date) {
