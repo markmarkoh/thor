@@ -5,21 +5,28 @@
   "main": "main.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "watchify main.js --debug -t babelify -o 'exorcist built/main.js.map > built/main.js' -v -d"
+    "build": "watchify main.js --debug -t babelify -o 'exorcist built/main.js.map > built/main.js' -v -d",
+    "timeline": "watchify timeline.js --debug -t babelify -o 'exorcist built/timeline.js.map > built/timeline.js' -v -d"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
     "babel-cli": "^6.18.0",
+    "babel-polyfill": "^6.16.0",
     "babel-preset-es2015": "^6.18.0",
     "babel-preset-stage-0": "^6.16.0",
+    "babel-runtime": "^6.18.0",
     "babelify": "^7.3.0",
     "browserify": "^13.1.1",
+    "crossfilter2": "^1.3.14",
     "d3": "^4.4.0",
     "exorcist": "^0.4.0",
     "leaflet": "^1.0.2",
     "leaflet-d3-svg-overlay": "^2.2.0",
     "rollupify": "^0.3.5",
     "watchify": "^3.7.0"
+  },
+  "devDependencies": {
+    "babel-plugin-transform-runtime": "^6.15.0"
   }
 }

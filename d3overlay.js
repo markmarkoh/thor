@@ -78,13 +78,13 @@ export default function(L) {
 					// SVG element
 					if (L.version < "1.0") {
 							map._initPathRoot();
-							this._svg = d3.select(map._panes.overlayPane)
-									.select("svg");
-							this._rootGroup = this._svg.append("g");
+							this._canvas = d3.select(map._panes.overlayPane)
+									.select("canvas");
+							this._rootGroup = this._canvas
 					} else {
-							this._svg = L.svg();
-							map.addLayer(this._svg);
-							this._rootGroup = d3.select(this._svg._rootGroup).classed("d3-overlay", true);
+							this._canvas = L.canvas();
+							map.addLayer(this._canvas);
+							this._rootGroup = this.select('canvas').classed("d3-overlay", true);
 					}
 					this._rootGroup.classed("leaflet-zoom-hide", this.options.zoomHide);
 					this.selection = this._rootGroup;
@@ -141,7 +141,7 @@ export default function(L) {
 							map.off("viewreset", this._zoomChange, this);
 							this._rootGroup.remove();
 					} else {
-							this._svg.remove();
+							this._canvas.remove();
 					}
 			},
 

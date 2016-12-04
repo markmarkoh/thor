@@ -7,8 +7,9 @@ d3overlay(L)
 const map = new L.Map('main', {dragging: false, zoomControl: false}).setView([14.25, 103.58], 6);
 const tiles = 'https://b.tiles.mapbox.com/v4/mapbox.b0v97egc/{z}/{x}/{y}.png?access_token='
 const access = 'pk.eyJ1IjoibWFya21hcmtvaCIsImEiOiJjaW84eGIyazgwMzJydzFrcTJkdXF4bHZ4In0.-g3eoOGOlbfUBYe9qDH6bw'
+const altTiles = 'https://api.mapbox.com/styles/v1/markmarkoh/ciw9qzdyc000a2pmr5up1ckna/tiles/256/{z}/{x}/{y}@2x?access_token='
 
-L.tileLayer(`${tiles}${access}`, {
+L.tileLayer(`${altTiles}${access}`, {
 }).addTo(map);
 
 var d3Overlay = L.d3SvgOverlay(function(selection, projection){
@@ -36,4 +37,3 @@ var d3Overlay = L.d3SvgOverlay(function(selection, projection){
 d3Overlay.addTo(map);
 
 console.log(L)
-
