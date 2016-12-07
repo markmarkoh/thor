@@ -25,6 +25,7 @@
     "exorcist": "^0.4.0",
     "leaflet": "^1.0.2",
     "leaflet-d3-svg-overlay": "^2.2.0",
+    "luma.gl": "^2.10.3",
     "operative": "^0.4.5",
     "react": "^15.4.1",
     "react-dom": "^15.4.1",
