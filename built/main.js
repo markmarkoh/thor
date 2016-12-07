@@ -205,7 +205,7 @@ var tiles = 'https://b.tiles.mapbox.com/v4/mapbox.b0v97egc/{z}/{x}/{y}.png?acces
 var access = 'pk.eyJ1IjoibWFya21hcmtvaCIsImEiOiJjaW84eGIyazgwMzJydzFrcTJkdXF4bHZ4In0.-g3eoOGOlbfUBYe9qDH6bw';
 var altTiles = 'https://api.mapbox.com/styles/v1/markmarkoh/ciw9qzdyc000a2pmr5up1ckna/tiles/256/{z}/{x}/{y}@2x?access_token=';
 
-L.tileLayer('' + altTiles + access, {}).addTo(map);
+L.tileLayer('' + tiles + access, {}).addTo(map);
 
 var d3Overlay = L.d3SvgOverlay(function (selection, projection) {
 	var dataset = [{

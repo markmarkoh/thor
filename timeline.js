@@ -7,7 +7,10 @@ const altFormatter = timeParse('%Y%m%d')
 
 let currentSeries = 1
 let hasStarted = false
+let lastDayInLatestDownloadSeries
 const MAX_SERIES = 5
+const LAST_DAY = formatter('1975-05-15')
+//const LAST_DAY = formatter('1965-11-15')
 const bombData = {}
 
 console.time('Get file')
@@ -29,7 +32,8 @@ function download () {
     console.log('Entries', entries[0])
     console.log('Entries', entries[1])
     console.log('Entries', entries[entries.length - 5])
-    const firstEntry = process(entries)
+    const [firstEntry, lastEntry] = process(entries)
+    lastDayInLatestDownloadSeries = lastEntry.date.toString().split(' 00:00:00')[0]
     if (!hasStarted) {
       start(firstEntry.date)
       hasStarted = true
@@ -65,19 +69,20 @@ function start (date) {
     if (bombs) {
       main.innerHTML = `
         <h2>${date}</h2>
-        <ul>${bombs.map(b => `<li>${b.craft} at ${b.lat},${b.lng}</li>`)}</ul>`
+        <ul>${bombs.slice(0,5).map(b => `<li>${b.craft} at ${b.lat},${b.lng}</li>`)}</ul>`
     } else {
       console.log('no bomb data', date)
     }
     const keysLeft = Object.keys(bombData).length
-    if (keysLeft > 1) {
-      if (keysLeft === 200 && currentSeries < MAX_SERIES) {
+    if (date <= LAST_DAY) {
+      const inAdvance = new Date(date)
+      inAdvance.setDate(date.getDate() + 91)
+      if (inAdvance.toDateString() == lastDayInLatestDownloadSeries && currentSeries <= MAX_SERIES) {
         console.log('Needs more data')
         download()
       }
       console.log('Upping the day', date)
       date = addDays(date)
-      console.log('Upped', date)
     } else {
       clearInterval(interval)
       console.log('show is over')
@@ -109,7 +114,7 @@ function process (entries) {
   }, bombData);
   console.timeEnd('Transpose bombs')
 
-  return entries[0]
+  return [entries[0], entries[entries.length -1]]
 }
 
 function addDays(date, days = 1) {

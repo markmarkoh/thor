@@ -23,6 +23,7 @@
     "exorcist": "^0.4.0",
     "leaflet": "^1.0.2",
     "leaflet-d3-svg-overlay": "^2.2.0",
+    "operative": "^0.4.5",
     "rollupify": "^0.3.5",
     "watchify": "^3.7.0"
   },
