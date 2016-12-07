@@ -6,6 +6,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "watchify main.js --debug -t babelify -o 'exorcist built/main.js.map > built/main.js' -v -d",
+    "app": "watchify app.js --debug -t babelify -o 'exorcist built/app.js.map > built/app.js' -v -d",
     "timeline": "watchify timeline.js --debug -t babelify -o 'exorcist built/timeline.js.map > built/timeline.js' -v -d"
   },
   "author": "",
@@ -20,14 +21,19 @@
     "browserify": "^13.1.1",
     "crossfilter2": "^1.3.14",
     "d3": "^4.4.0",
+    "deck.gl": "^3.1.1",
     "exorcist": "^0.4.0",
     "leaflet": "^1.0.2",
     "leaflet-d3-svg-overlay": "^2.2.0",
     "operative": "^0.4.5",
+    "react": "^15.4.1",
+    "react-dom": "^15.4.1",
+    "react-map-gl": "^1.7.2",
     "rollupify": "^0.3.5",
     "watchify": "^3.7.0"
   },
   "devDependencies": {
+    "babel-plugin-transform-react-jsx": "^6.8.0",
     "babel-plugin-transform-runtime": "^6.15.0"
   }
 }
