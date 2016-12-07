@@ -1,5 +1,6 @@
 html, body {
 	min-height: 100vh;
+  margin: 0;
 }
 
 .map {
@@ -10,4 +11,30 @@ html, body {
 	fill: none;
 	stroke: red;
 	stroke-width: 5px;
+}
+
+.timeline {
+  position: absolute;
+  z-index: 10101;
+  top: 0;
+  left: 0;
+  overflow: visible;
+  right: 0;
+  height: 33px;
+  border-bottom: 2px solid #222;
+  background-color: rgba(255,255,255,0.85);
+}
+
+.marker {
+  fill: rgba(100,100,100,0.6);
+}
+
+text {
+  text-anchor: middle;
+  font-size: 13px;
+  font-family: Arial;
+}
+
+text.first {
+  text-anchor: initial;
 }

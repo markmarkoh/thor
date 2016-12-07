@@ -1,13 +1,13 @@
 import 'babel-polyfill'
 import React from 'react'
-import {render} from 'react-dom';
+import {render, findDOMNode} from 'react-dom';
 import MapGL from 'react-map-gl';
 import DeckGL from 'deck.gl/react';
 import {ScatterplotLayer} from 'deck.gl';
-import {csv, timeParse} from 'd3'
-import crossfilter from 'crossfilter2'
+import {csv, timeParse, range, scaleTime, select, timeFormat, axisBottom} from 'd3'
 const formatter = timeParse('%Y-%m-%d')
 const altFormatter = timeParse('%Y%m%d')
+const timeDisplay = timeFormat('%b %Y')
 
 let currentSeries = 1
 let hasStarted = false
@@ -15,8 +15,9 @@ let lastDayInLatestDownloadSeries
 const MAX_SERIES = 5
 const LAST_DAY = formatter('1975-05-15')
 const COLOR = [255,0,0,200]
+const RADIUS = 120
 const bombData = {}
-const SLOW_DOWN = 1
+const SLOW_DOWN = 2
 
 const ACCESS = 'pk.eyJ1IjoibWFya21hcmtvaCIsImEiOiJjaW84eGIyazgwMzJydzFrcTJkdXF4bHZ4In0.-g3eoOGOlbfUBYe9qDH6bw'
 
@@ -25,25 +26,23 @@ class Map extends React.Component {
     currentSeries: 1,
     hasStarted: false,
     viewport: {
-      latitude: 13.95,
+      latitude: 16.35,
       longitude: 107.31669,
-      zoom: 6.540440,
-      bearing: -70.55991,
+      zoom: 6.340440,
+      bearing: -90.55991,
       pitch: 65,
       mapboxApiAccessToken: ACCESS
     },
     width: window.outerWidth,
     height: window.outerHeight,
     locations: [
-      {position: [107,14], radius: 100, color: COLOR},
-      {position: [107.1,14.5], radius: 100, color: COLOR},
-      {position: [106,13], radius: 100, color: COLOR}
+      {position: [107,14], radius: RADIUS, color: COLOR},
+      {position: [107.1,14.5], radius: RADIUS, color: COLOR},
+      {position: [106,13], radius: RADIUS, color: COLOR}
     ]
   }
 
-
   componentDidMount () {
-    //setTimeout(() => setInterval(this.addLocation, 250), 10000)
     this.download(this.state.currentSeries)
 
     // setTimeout(() => setInterval(() => {
@@ -58,16 +57,16 @@ class Map extends React.Component {
   }
 
   start = (date) => {
-    const interval = setInterval(() => {
+    this.interval = setInterval(() => {
       const key = date.toString().split(' 00:00:00')[0]
       const bombs = bombData[key]
       if (bombs) {
         this.setState({
+          date,
           locations: bombs.map(b => {
-            return {position: [b.lng, b.lat], radius: 100, color: COLOR}
+            return {position: [b.lng, b.lat], radius: RADIUS, color: COLOR}
           })
         })
-        console.log('num bombs', bombs.length)
       } else {
         console.log('no bomb data', date)
       }
@@ -79,13 +78,11 @@ class Map extends React.Component {
           console.log('Needs more data')
           this.download()
         }
-        console.log('Upping the day', date)
         date = addDays(date)
       } else {
-        clearInterval(interval)
+        clearInterval(this.interval)
         console.log('show is over')
       }
-      delete bombData[key]
     }, 50 * SLOW_DOWN)
   }
 
@@ -98,7 +95,7 @@ class Map extends React.Component {
         lng: parseFloat(row['TGTLONDDD_DDD_WGS84']),
         weapon: row['WEAPONTYPE'] || null,
         service: row['MILSERVICE'],
-        mission: row['FUNC_DESC'] || null,
+        mission: row['MFUNC_DESC'] || null,
         craft: row['VALID_AIRCRAFT_ROOT']
       }
     }, (err, entries) => {
@@ -122,7 +119,7 @@ class Map extends React.Component {
   }
 
   render() {
-    const {viewport, width, locations, height} = this.state
+    const {viewport, width, locations, date, height} = this.state
 
     const bombs = new ScatterplotLayer({
       id: 'bombs',
@@ -133,7 +130,7 @@ class Map extends React.Component {
 
     return (
       <div>
-
+        <Timeline date={date} width={width} />
         <MapGL
           {...viewport}
         //mapStyle="mapbox://styles/mapbox/dark-v9"
@@ -149,7 +146,7 @@ class Map extends React.Component {
             width={width}
             height={height}
             layers={[bombs]}
-            debug />
+             />
         </MapGL>
       </div>
 
@@ -158,22 +155,47 @@ class Map extends React.Component {
 }
 
 class Timeline extends React.Component {
+  constructor (props) {
+    super(props)
+    this.timeScale = scaleTime()
+      .domain([new Date(1965, 9, 1), new Date(1975, 5, 15)])
+      .range([0, props.width])
+  }
 
+  render () {
+    const {date, width} = this.props
+    return (
+      <svg className='timeline' width={width} height={50}>
+        {range(1, 116, 5).map(n => {
+          return (
+            <g key={n}>
+              {(n === 1 || n === 111 || n % 4 === 0) && <text className={n === 1 ? 'first' : 'other'} x={(width / 116) * n} y={20}>{timeDisplay(this.timeScale.invert((width / 116) * n))}</text>}
+              <rect x={(width / 116) * n} y={25} width={1} height={10}></rect>
+            </g>
+          )
+        })}
+        <rect className='marker' height={35} width={5} y={0} x={this.timeScale(date) || 0}></rect>
+      </svg>
+    )
+  }
 }
 
 console.time('Get file')
 
-
+const seenTypes = {}
 function process (entries) {
   console.time('Transpose bombs')
   entries.reduce((acc, bomb) => {
     const key = bomb.date.toString().split(' 00:00:00')[0]
     acc[key] = acc[key] || [];
     acc[key].push(bomb);
+    if (!seenTypes[bomb.mission]) {
+      seenTypes[bomb.mission] = 1
+    } else seenTypes[bomb.mission] += 1
     return acc;
   }, bombData);
   console.timeEnd('Transpose bombs')
-
+  console.log('seen types', seenTypes)
   return [entries[0], entries[entries.length -1]]
 }
 
