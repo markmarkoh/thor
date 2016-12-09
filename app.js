@@ -3,6 +3,7 @@ import React from 'react'
 import {render, findDOMNode} from 'react-dom';
 import MapGL from 'react-map-gl';
 import DeckGL from 'deck.gl/react';
+import crossfilter from 'crossfilter2'
 import {ScatterplotLayer} from 'deck.gl';
 import {csv, timeParse, range, scaleTime, select, timeFormat, axisBottom} from 'd3'
 const formatter = timeParse('%Y-%m-%d')
@@ -184,6 +185,19 @@ console.time('Get file')
 
 const seenTypes = {}
 function process (entries) {
+  console.time('Starting crossfilter')
+  const cf = crossfilter(entries)
+  console.timeEnd('Starting crossfilter')
+  console.time('Creating dimension')
+  const byCraft = cf.dimension(b => b.craft)
+  console.timeEnd('Creating dimension')
+  console.time('Grouping by date')
+  const groupByCraft = byCraft.group()
+  console.log('Groups', groupByCraft.size())
+  console.log(groupByCraft.all())
+  console.timeEnd('Grouping by date')
+  console.log(byCraft.filter('F4'))
+
   console.time('Transpose bombs')
   entries.reduce((acc, bomb) => {
     const key = bomb.date.toString().split(' 00:00:00')[0]

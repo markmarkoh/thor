@@ -7,6 +7,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "watchify main.js --debug -t babelify -o 'exorcist built/main.js.map > built/main.js' -v -d",
     "app": "watchify app.js --debug -t babelify -o 'exorcist built/app.js.map > built/app.js' -v -d",
+    "app2": "watchify app2.js --debug -t babelify -o 'exorcist built/app2.js.map > built/app2.js' -v -d",
     "timeline": "watchify timeline.js --debug -t babelify -o 'exorcist built/timeline.js.map > built/timeline.js' -v -d"
   },
   "author": "",
