@@ -31,11 +31,14 @@
     "leaflet": "^1.0.2",
     "leaflet-d3-svg-overlay": "^2.2.0",
     "luma.gl": "^2.10.3",
+    "mapbox-gl": "^0.28.0",
     "operative": "^0.4.5",
+    "papaparse": "^4.1.2",
     "react": "^15.4.1",
     "react-dom": "^15.4.1",
     "react-map-gl": "^1.7.2",
     "rollupify": "^0.3.5",
+    "stats.js": "^0.17.0",
     "watchify": "^3.7.0"
   },
   "devDependencies": {
