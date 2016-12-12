@@ -3,8 +3,6 @@ import React from 'react'
 import {render, findDOMNode} from 'react-dom';
 import MapGL from 'react-map-gl';
 import DeckGL from 'deck.gl/react';
-//import crossfilter from 'crossfilter2'
-//import Papa from 'papaparse'
 import {ScatterplotLayer} from 'deck.gl';
 import {csv, timeParse, range, scaleTime, select, timeFormat, axisBottom} from 'd3'
 const formatter = timeParse('%Y-%m-%d')
@@ -16,8 +14,8 @@ let currentSeries = 1
 let hasStarted = false
 let isDownloading = false
 let lastDayInLatestDownloadSeries
-const MAX_SERIES = 5
-const LAST_DAY = formatter('1975-05-15')
+const MAX_SERIES = 6
+const LAST_DAY = formatter('1973-08-15')
 
 const RADIUS = 150
 const bombData = {}
@@ -130,8 +128,8 @@ const NonWarFare = [
 ]
 const otherMission = new Set(NonWarFare)
 
-stats.showPanel( 0 ); // 0: fps, 1: ms, 2: mb, 3+: custom
-document.body.appendChild( stats.dom );
+//stats.showPanel( 0 ); // 0: fps, 1: ms, 2: mb, 3+: custom
+//document.body.appendChild( stats.dom );
 const ACCESS = 'pk.eyJ1IjoibWFya21hcmtvaCIsImEiOiJjaW84eGIyazgwMzJydzFrcTJkdXF4bHZ4In0.-g3eoOGOlbfUBYe9qDH6bw'
 
 class Map extends React.Component {
@@ -142,9 +140,9 @@ class Map extends React.Component {
     viewport: {
       latitude: 16.35,
       longitude: 107.31669,
-      pitch: 65,
-      bearing: -90.55991,
-      zoom: 6.340440,
+      pitch: 0,
+      bearing: -0.55991,
+      zoom: 4.340440,
       mapboxApiAccessToken: ACCESS
     },
     width: window.outerWidth,
@@ -158,18 +156,17 @@ class Map extends React.Component {
 
   componentDidMount () {
     this.download()
+    // this.rotateInterval = setInterval(() => {
+    //   this.setState({
+    //     viewport: {
+    //       ...this.state.viewport,
+    //       pitch: Math.max(this.state.viewport.pitch + .025, 65),
+    //       bearing: Math.max(this.state.viewport.bearing + 0.01, -90.55991),
+    //       zoom: Math.max(this.state.viewport.zoom + 0.0004, 6.340440)
+    //     }
+    //   })
+    // })
   }
-  //   this.rotateInterval = setInterval(() => {
-  //     this.setState({
-  //       viewport: {
-  //         ...this.state.viewport,
-  //         pitch: Math.max(this.state.viewport.pitch + .025, 65),
-  //         bearing: Math.max(this.state.viewport.bearing + 0.01, -90.55991),
-  //         zoom: Math.max(this.state.viewport.zoom + 0.0004, 6.340440)
-  //       }
-  //     })
-  //   })
-  // }
 
   start = (first) => {
     //  date: row['MSNDATE'].indexOf('-') > -1 ? formatter(row['MSNDATE']) : altFormatter(row['MSNDATE']),
@@ -178,10 +175,27 @@ class Map extends React.Component {
     })
     hasStarted = true
 
+    this.zoomInterval = setInterval(() => {
+      const {zoom, pitch, bearing} = this.state.viewport
+      if (zoom === 6.30440 && pitch === 65 && bearing === -90.55991) {
+        console.log('ending the zoom')
+        clearInterval(this.zoomInterval)
+        return
+      }
+      this.setState({
+        viewport: {
+          ...this.state.viewport,
+          zoom: Math.min(this.state.viewport.zoom + 0.015, 6.30440),
+          pitch: Math.min(this.state.viewport.pitch + 0.5, 65),
+          bearing: Math.max(this.state.viewport.bearing - 0.735, -90.55991)
+        }
+      })
+    })
+
     let key = first.key
     let date = altFormatter(key.slice(2))
     this.interval = setInterval(() => {
-      stats.begin()
+      //stats.begin()
       const bombs = bombData[key]
       if (bombs) {
         this.setState({
@@ -199,6 +213,7 @@ class Map extends React.Component {
 
       if (date <= LAST_DAY) {
         if(isDownloading === false && Object.keys(bombData).length < 300 && currentSeries <= MAX_SERIES) {
+          isDownloading = true
           window.setTimeout(() => this.download(), 10)
         }
         date = addDays(date)
@@ -211,9 +226,9 @@ class Map extends React.Component {
         return
       }
 
-      stats.end()
+    //  stats.end()
 
-    }, 75)
+  }, 25)
   }
 
   download  = () => {
@@ -231,7 +246,7 @@ class Map extends React.Component {
           bombData[bomb.key] = [bomb]
         }
       }
-      if (!hasStarted) {
+      if (!hasStarted && this.state.currentSeries === 1) {
         console.log(entries[0])
         // this.setState({
         //   viewport: {
@@ -245,6 +260,10 @@ class Map extends React.Component {
       }
       this.setState({
         currentSeries: currentSeries + 1
+      }, () => {
+        // if (this.state.currentSeries < 6) {
+        //   this.download()
+        // }
       })
     })
 
@@ -304,7 +323,7 @@ class Map extends React.Component {
               Theater History of Operations (THOR) Data
             </h1>
             <p className='lead'>
-              Visualizing 2,912,532 air missions from 1965 to 1975 by the United States Military and their allies.<br/>
+              Visualizing 2,912,532 air missions from 1965 to 1973 by the United States Military and their allies.<br/>
               A collaboration with data.mil, to explore the data further, go to <a href='#'>collabsite.com</a>.
             </p>
           </div>
@@ -349,7 +368,7 @@ class Timeline extends React.Component {
   constructor (props) {
     super(props)
     this.timeScale = scaleTime()
-      .domain([new Date(1965, 9, 1), new Date(1975, 5, 15)])
+      .domain([new Date(1965, 9, 1), new Date(1973, 8, 15)])
       .range([0, props.width])
   }
 
