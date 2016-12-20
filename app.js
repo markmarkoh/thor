@@ -14,10 +14,10 @@ let currentSeries = 1
 let hasStarted = false
 let isDownloading = false
 let lastDayInLatestDownloadSeries
-const MAX_SERIES = 6
+const MAX_SERIES = 5
 const LAST_DAY = formatter('1973-08-15')
 
-const RADIUS = 150
+const RADIUS = 130
 const bombData = {}
 window.missionTypes = {}
 const SLOW_DOWN = 2
@@ -140,9 +140,9 @@ class Map extends React.Component {
     viewport: {
       latitude: 16.35,
       longitude: 107.31669,
-      pitch: 0,
-      bearing: -0.55991,
-      zoom: 4.340440,
+      pitch: 65, // 12,
+      bearing: -90.55991, // -4.55991,
+      zoom: 6.20440, // 4.840440,
       mapboxApiAccessToken: ACCESS
     },
     width: window.outerWidth,
@@ -170,49 +170,31 @@ class Map extends React.Component {
 
   start = (first) => {
     //  date: row['MSNDATE'].indexOf('-') > -1 ? formatter(row['MSNDATE']) : altFormatter(row['MSNDATE']),
+    try {
+      ga('send', 'event', 'show', 'start')
+    } catch (e) { console.error('analytics failure', e) }
     this.setState({
       hasStarted: true
     })
     hasStarted = true
 
-    this.zoomInterval = setInterval(() => {
-      const {zoom, pitch, bearing} = this.state.viewport
-      if (zoom === 6.30440 && pitch === 65 && bearing === -90.55991) {
-        console.log('ending the zoom')
-        clearInterval(this.zoomInterval)
-        return
-      }
-      this.setState({
-        viewport: {
-          ...this.state.viewport,
-          zoom: Math.min(this.state.viewport.zoom + 0.015, 6.30440),
-          pitch: Math.min(this.state.viewport.pitch + 0.5, 65),
-          bearing: Math.max(this.state.viewport.bearing - 0.735, -90.55991)
-        }
-      })
-    })
-
     let key = first.key
     let date = altFormatter(key.slice(2))
     this.interval = setInterval(() => {
       //stats.begin()
-      const bombs = bombData[key]
-      if (bombs) {
-        this.setState({
-          date,
-          locations: bombs.map(b => {
-            return {position: b.p, radius: RADIUS, color: COLORS[b.cat]}
-          })
+      const bombs = bombData[key] || []
+      this.setState({
+        date,
+        locations: bombs.map(b => {
+          return {position: b.p, radius: RADIUS, color: COLORS[b.cat]}
         })
-      } else {
-        //console.log('no bomb data', key, date, Object.keys(bombData).length)
-      }
+      })
 
       //bombData[key] = null
       delete bombData[key]
 
       if (date <= LAST_DAY) {
-        if(isDownloading === false && Object.keys(bombData).length < 300 && currentSeries <= MAX_SERIES) {
+        if(isDownloading === false && Object.keys(bombData).length < 400 && currentSeries <= MAX_SERIES) {
           isDownloading = true
           window.setTimeout(() => this.download(), 10)
         }
@@ -228,7 +210,7 @@ class Map extends React.Component {
 
     //  stats.end()
 
-  }, 25)
+  }, 50)
   }
 
   download  = () => {
@@ -324,7 +306,7 @@ class Map extends React.Component {
             </h1>
             <p className='lead'>
               Visualizing 2,912,532 air missions from 1965 to 1973 by the United States Military and their allies.<br/>
-              A collaboration with data.mil, to explore the data further, go to <a href='#'>collabsite.com</a>.
+							A project with <a href="https://data.mil">data.mil</a>. To explore the data further, go to <a href='https://data.world/datamil'>data.world</a>
             </p>
           </div>
           <div className='start'>

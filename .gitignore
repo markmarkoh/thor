@@ -1,3 +1,4 @@
 node_modules
 built/*.ugly.js
 built/*.map
+*.swp
