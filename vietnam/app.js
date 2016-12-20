@@ -156,21 +156,12 @@ class Map extends React.Component {
   }
 
   componentDidMount () {
-    this.download()
-    // this.rotateInterval = setInterval(() => {
-    //   this.setState({
-    //     viewport: {
-    //       ...this.state.viewport,
-    //       pitch: Math.max(this.state.viewport.pitch + .025, 65),
-    //       bearing: Math.max(this.state.viewport.bearing + 0.01, -90.55991),
-    //       zoom: Math.max(this.state.viewport.zoom + 0.0004, 6.340440)
-    //     }
-    //   })
-    // })
+    if (!isMobile) {
+      this.download()
+    }
   }
 
   start = (first) => {
-    //  date: row['MSNDATE'].indexOf('-') > -1 ? formatter(row['MSNDATE']) : altFormatter(row['MSNDATE']),
     try {
       ga('send', 'event', 'show', 'start')
     } catch (e) { console.error('analytics failure', e) }
@@ -231,22 +222,14 @@ class Map extends React.Component {
       }
       if (!hasStarted && this.state.currentSeries === 1) {
         console.log(entries[0])
-        // this.setState({
-        //   viewport: {
-        //     ...this.state.viewport,
-        //     pitch: 65,
-        //     bearing: -90.55991,
-        //     zoom: 6.340440
-        //   }
-        // })
         this.firstBomb = entries[0]
       }
       this.setState({
         currentSeries: currentSeries + 1
       }, () => {
-        // if (this.state.currentSeries < 6) {
-        //   this.download()
-        // }
+        if (this.state.currentSeries < 6) {
+          this.download()
+        }
       })
     })
 
