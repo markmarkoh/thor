@@ -22,6 +22,7 @@ const bombData = {}
 window.missionTypes = {}
 const SLOW_DOWN = 2
 var stats = new Stats();
+const isMobile = ( /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) )
 
 const COLORS = {
   combat: [202,0,32,255],
@@ -311,6 +312,9 @@ class Map extends React.Component {
           </div>
           <div className='start'>
             <button title='Start' onClick={() => {
+              if (isMobile) {
+                window.location.href = 'https://vimeo.com/195152105'
+              }
               this.start(this.firstBomb)
             }}>▶</button>
             <span className='help'>
