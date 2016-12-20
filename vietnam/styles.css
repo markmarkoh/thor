@@ -1,0 +1,134 @@
+html, body {
+	min-height: 100vh;
+  margin: 0;
+}
+
+.map {
+	height: 100vh;
+}
+
+.bomb {
+	fill: none;
+	stroke: red;
+	stroke-width: 5px;
+}
+
+.timeline {
+  position: absolute;
+  z-index: 10101;
+  top: 0;
+  left: 0;
+  overflow: visible;
+  right: 0;
+  height: 33px;
+  background-color: #222;
+  border-bottom: 2px solid #222;
+  box-shadow: 2px 2px 2px #FFF;
+}
+
+.marker {
+  fill: #FFF;
+}
+
+text {
+  text-anchor: middle;
+  font-size: 13px;
+  fill: #FFF;
+  text-shadow: 1px 1px 4px #000;
+}
+
+text.first {
+  text-anchor: initial;
+}
+
+.legend text {
+  text-anchor: start;
+}
+
+.timeline rect {
+  fill: #FFF;
+}
+
+.legend {
+  position: absolute;
+  bottom: 50px;
+  left: 50px;
+  background: #FFF;
+  background-color: #222;
+  border-bottom: 2px solid #222;
+  border-radius: 5px;
+  box-shadow: 2px 2px 4px #000;
+}
+
+.overlay .legend {
+  box-shadow: none;
+}
+
+.overlay {
+  position: absolute;
+  height: 100vh;
+  width: 100%;
+  background-color: rgba(0,0,0,0.8);
+  z-index: 1010;
+  color: #FFF;
+  padding: 0 5rem;
+  display: flex;
+  align-items: center;
+}
+
+.overlay a {
+  color: #FFF;
+}
+
+.overlay .help {
+  font-size: 10px;
+}
+
+.notstarted .map {
+  filter: blur(2.5px);
+}
+
+h1.header {
+  font-size: 5em;
+}
+
+p.lead {
+  margin-top: 4rem;
+  font-size: 16px;
+}
+
+.info, .start {
+  width: 50%;
+  float: left;
+  margin-top: -10em;
+}
+
+.start {
+  text-align: center;
+}
+
+.start button {
+  width: 200px;
+  height: 200px;
+  font-size: 8em;
+  padding: 0;
+  cursor: pointer;
+  border: 10px solid black;
+  padding-left: 10px;
+  background: #FFF;
+  display: block;
+  margin: 0 auto;
+  box-shadow: 0 0 0 10px hsl(0, 0%, 100%);
+  border-radius: 100px;
+  margin-bottom: 25px;
+  outline: none;
+}
+
+.start button:hover {
+  background: hsl(0, 0%, 80%);
+  box-shadow: 0 0 0 10px hsl(0, 0%, 80%);
+}
+
+g.text {
+  font-family: "trajan-sans-pro",sans-serif;
+}
