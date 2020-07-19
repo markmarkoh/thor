@@ -18,7 +18,7 @@
             .table-figure {
                 overflow-x: scroll;
             }
-            table, td, th {
+            table.table, .table td, .table th {
               border: 1px solid black;
               border-collapse: collapse;
             }
@@ -29,7 +29,7 @@
             <h1>Vietnam combat map in 70 lines of code</h1>
             <p class="subtitle">Mark Di Marco</p>
             <section>
-                <p>This post will cover creating an interactive, 3D geographical data visualization, with some raw data, 35 lines of Python, and 35 lines of Javascript, and a few helpful bash commands. <a href="https://github.com/markmarkoh/thor/tree/master/vietnam-clustering">Source Code on Github</a> can be found here.
+                <p>This post will cover creating an interactive, 3D geographical data visualization, with some raw data, 30 lines of Python, and 35 lines of Javascript, and a few helpful bash commands. <a href="https://github.com/markmarkoh/thor/tree/master/vietnam-clustering">Source Code on Github</a> can be found here.
                 </p>
             <figure>
                 <span class="marginnote">
@@ -443,15 +443,30 @@ awk -F, '$9 != "" && $40 != "NONKINETIC" && $12 != 0 {print}' thor_data_vietnam.
                     <sup>3</sup>For posterity, <code>gzip -c thor_filtered.csv | wc -c</code> shows 133 megabytes after gzipping.
                 </span>
                 The goal for this project is to be an interactive browser-based visualization, so shipping 735 megabytes of data is out of the question, even if <code>gzipping</code> the file pares down the size<sup>3</sup>.
+                </p>
                 <p>
-                <p>
-                    We need a way to aggregate this data before sending it to the browser. We know these 1.95 million rows all happen in a relatively small geographical area, so ideally we could find a way to cluster similar entries based on GPS coordinates. Since we'll be showing a hexgrid visualizatoin, each hex in the visualization might encompass many square kilometers.
+                    We need a way to aggregate this data before sending it to the browser. We know these 1.95 million rows all happen in a relatively small geographical area, so ideally we could find a way to cluster similar entries based on GPS coordinates. Since we'll be showing a hexgrid visualization, each hex in the visualization might encompass many square kilometers.
                 </p>
                 <p>
                     There exists a library called <a href="https://h3geo.org/">H3</a> that is perfect for our use-case. H3 is a "Hexagonal Hierarchical Geospatial Indexing System", which provides an API that takes a latitude, longitude, and a resolution, and returns back a string that represents the bucket for that entry. Increasing the resolution parameter increases the number of buckets.
                 </p>
                 <p>
-
+                <span class="marginnote">
+                    <sup>4</sup> H3's bucketing algorithm is undestandbly lossy. Running the reverse command, <code>h3.h3_to_geo</code> won't give you the same coordinates you put in, but as you increase the resolution, the results will get closer and closer.
+                </span>
+                Using H3's Python binding (<code>pip install h3</code>), we can test it with <code>h3.geo_to_h3(0, 0, 5)</code>, outputs <code>'85754e67fffffff'</code>
+                and <code>h3.geo_to_h3(14, -100, 9)</code> which outputs <code>'896da150217fffff'</code><sup>4</sup>
+                </p>
+                <p>
+                    Now we can write a simple Python program that reads the 1.95 million row CSV file one row at a time, computes the H3 coordinate, and aggregates the values in a simple Python dictionary object, and then serializes that object out to JSON for easy browser consumption (browsers require third-party libraries to parse CSV)
+                    <script src="https://gist.github.com/markmarkoh/7d35df2e44153ef2edf6ed683a1a0b11.js"></script>
+                </p>
+                <p>I just print the output of that script to stdout, so to save a JSON file out of it, all you have to do is run <code>python make_h3.py > hexed.json</code>. The resulting file is 2.8 megabytes, which 53,330 distinct buckets.</p>
+            </section>
+            <section>
+                <h2 id="presenting">Visualizing The Data</h2>
+                <p>
+                Now that we have the 1.95 gigabytes of data, filtered and aggregated down to 2.8 megabytes, we're ready to create a visualization.
                 </p>
             </section>
         </article>
