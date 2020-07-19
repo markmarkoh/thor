@@ -1,19 +1,408 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
     <head>
-        <title>US Forces bombing map by volume</title>
-        <script src="https://unpkg.com/h3-js"></script>
-        <script src="https://unpkg.com/deck.gl@latest/dist.min.js"></script>
-        <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v0.53.0/mapbox-gl.js'></script>
-        <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v0.53.0/mapbox-gl.css' rel='stylesheet' />
+        <meta charset="utf-8" />
+        <title>Vietnam combat map in 70 lines of code</title>
+        <link rel="stylesheet" href="tufte.css" />
+        <link rel="stylesheet" href="latex.css" />
+        <meta name="viewport" content="width=device-width, initial-scale=1">
         <style type="text/css">
-            body {
-                width: 100vw;
-                height: 100vh;
-                margin: 0;
+            .table td, .table th {
+                overflow: hidden;
+                white-space: nowrap;
+                max-width: 30rem;
+                text-overflow: ellipsis;
+                text-align: left;
+                padding: 5px;
+            }
+            .table-figure {
+                overflow-x: scroll;
+            }
+            table, td, th {
+              border: 1px solid black;
+              border-collapse: collapse;
+            }
         </style>
     </head>
     <body>
-        <script src="index.js"></script>
+        <article>
+            <h1>Vietnam combat map in 70 lines of code</h1>
+            <p class="subtitle">Mark Di Marco</p>
+            <section>
+                <p>This post will cover creating an interactive, 3D geographical data visualization, with some raw data, 35 lines of Python, and 35 lines of Javascript, and a few helpful bash commands. <a href="https://github.com/markmarkoh/thor/tree/master/vietnam-clustering">Source Code on Github</a> can be found here.
+                </p>
+            <figure>
+                <span class="marginnote">
+                    Map we'll be building using <em>deck.gl</em> and <em>H3</em> for hexagonal clustering
+                </span>
+                <a href="map.html"><img src="img-square.png" alt="Screenshot of hexgrid map showing US military force bombings in Vietnam" /></a>
+            </figure>
+            </section>
+            <section>
+                <h2 id="data">Data Preparation</h2>
+                <p>
+                    The data we'll be using comes from the THOR dataset published by <a href="http://www.data.mil">data.mil</a>, the U.S. Defense Digital Service, available for download on <a href="https://data.world/datamil/vietnam-war-thor-data">data.world</a>.
+                </p>
+                <p>
+                    The data is in CSV format, containing 4.6 million rows and 47 columns. It covers air missions by coalition forces from the years 1965 to 1975. U.S. military operations in Vietnam largely ended in 1973.
+                </p>
+                <p>
+                    The 4.6 million rows of data available for Vietnam contains all types of air missions - including bombings, recon, psy-ops, troop deployments, and supply drops. Our visualization is meant to cover bombings in particular, so we'll have to remove some data to isolate these mission types.
+                </p>
+                <figure class="table-figure fullwidth">
+                    <table class="table">
+<thead><tr><th title="Field #1">thor_data_viet_id</th>
+<th title="Field #2">countryflyingmission</th>
+<th title="Field #3">milservice</th>
+<th title="Field #4">msndate</th>
+<th title="Field #5">sourceid</th>
+<th title="Field #6">sourcerecord</th>
+<th title="Field #7">valid_aircraft_root</th>
+<th title="Field #8">takeofflocation</th>
+<th title="Field #9">tgtlatdd_ddd_wgs84</th>
+<th title="Field #10">tgtlonddd_ddd_wgs84</th>
+<th title="Field #11">tgttype</th>
+<th title="Field #12">numweaponsdelivered</th>
+<th title="Field #13">timeontarget</th>
+<th title="Field #14">weapontype</th>
+<th title="Field #15">weapontypeclass</th>
+<th title="Field #16">weapontypeweight</th>
+<th title="Field #17">aircraft_original</th>
+<th title="Field #18">aircraft_root</th>
+<th title="Field #19">airforcegroup</th>
+<th title="Field #20">airforcesqdn</th>
+<th title="Field #21">callsign</th>
+<th title="Field #22">flthours</th>
+<th title="Field #23">mfunc</th>
+<th title="Field #24">mfunc_desc</th>
+<th title="Field #25">missionid</th>
+<th title="Field #26">numofacft</th>
+<th title="Field #27">operationsupported</th>
+<th title="Field #28">periodofday</th>
+<th title="Field #29">unit</th>
+<th title="Field #30">tgtcloudcover</th>
+<th title="Field #31">tgtcontrol</th>
+<th title="Field #32">tgtcountry</th>
+<th title="Field #33">tgtid</th>
+<th title="Field #34">tgtorigcoords</th>
+<th title="Field #35">tgtorigcoordsformat</th>
+<th title="Field #36">tgtweather</th>
+<th title="Field #37">additionalinfo</th>
+<th title="Field #38">geozone</th>
+<th title="Field #39">id</th>
+<th title="Field #40">mfunc_desc_class</th>
+<th title="Field #41">numweaponsjettisoned</th>
+<th title="Field #42">numweaponsreturned</th>
+<th title="Field #43">releasealtitude</th>
+<th title="Field #44">releasefltspeed</th>
+<th title="Field #45">resultsbda</th>
+<th title="Field #46">timeofftarget</th>
+<th title="Field #47">weaponsloadedweight</th>
+<th title="Field #48">year</th>
+</tr></thead>
+<tbody><tr>
+<td align="right">404557</td>
+<td>UNITED STATES OF AMERICA</td>
+<td>USN</td>
+<td>1968-06-21</td>
+<td align="right">4757386</td>
+<td>CACTA6669</td>
+<td>A-7</td>
+<td>WESTPAC 66</td>
+<td align="right">18.38</td>
+<td align="right">105.744</td>
+<td>TRUCK PARK\STOP</td>
+<td align="right">0</td>
+<td align="right">120.0</td>
+<td>500LB GP MK-82</td>
+<td> </td>
+<td align="right">500</td>
+<td>A7A</td>
+<td>A7</td>
+<td> </td>
+<td> </td>
+<td> </td>
+<td align="right">18</td>
+<td align="right">1.0</td>
+<td>STRIKE</td>
+<td>A0002</td>
+<td align="right">1</td>
+<td>ROLLING THUN</td>
+<td>D</td>
+<td>N09122</td>
+<td> </td>
+<td>PREBRIEFED TGT</td>
+<td>NORTH VIETNAM</td>
+<td> </td>
+<td>18380N105744E</td>
+<td>DD.DDDN DDD.DDDE</td>
+<td>1309H</td>
+<td>MISSION: RT57C - CONTROL_TYPE: PREBRIEFED TGT - RTCOR: CORPS AREA II (IN-COUNTRY MISSIONS) OR RTE AREA 2 (OUT-OF-COUNTRY MISSIONS)</td>
+<td>WF</td>
+<td align="right">26299335</td>
+<td>KINETIC</td>
+<td align="right">900</td>
+<td align="right">0</td>
+<td> </td>
+<td> </td>
+<td> </td>
+<td align="right">120.0</td>
+<td align="right">-1</td>
+<td align="right">1968</td>
+</tr>
+<tr>
+<td align="right">404616</td>
+<td>UNITED STATES OF AMERICA</td>
+<td>USN</td>
+<td>1968-10-11</td>
+<td align="right">4757606</td>
+<td>CACTA6669</td>
+<td>F-4</td>
+<td>WESTPAC 43</td>
+<td align="right">18.466666</td>
+<td align="right">105.766666</td>
+<td>AREA\DEPOT</td>
+<td>0</td>
+<td align="right">0.0</td>
+<td>SIDEWINDER</td>
+<td> </td>
+<td align="right">164</td>
+<td>F4B</td>
+<td>F4</td>
+<td> </td>
+<td> </td>
+<td> </td>
+<td align="right">17</td>
+<td align="right">35.0</td>
+<td>ESCORT/COVER</td>
+<td>L0035</td>
+<td>1</td>
+<td> </td>
+<td>D</td>
+<td>N09558</td>
+<td> </td>
+<td>PREBRIEFED TGT</td>
+<td>NORTH VIETNAM</td>
+<td> </td>
+<td>1828N10546E</td>
+<td>DDMMN DDDMME</td>
+<td> </td>
+<td>MISSION: UERT614B - CONTROL_TYPE: PREBRIEFED TGT - RTCOR: CORPS AREA II (IN-COUNTRY MISSIONS) OR RTE AREA 2 (OUT-OF-COUNTRY MISSIONS)</td>
+<td>WF</td>
+<td align="right">26299395</td>
+<td>NONKINETIC</td>
+<td>0</td>
+<td align="right">4</td>
+<td> </td>
+<td> </td>
+<td> </td>
+<td align="right">0.0</td>
+<td align="right">-1</td>
+<td align="right">1968</td>
+</tr>
+<tr>
+<td align="right">404560</td>
+<td>UNITED STATES OF AMERICA</td>
+<td>USN</td>
+<td>1968-04-09</td>
+<td align="right">4757394</td>
+<td>CACTA6669</td>
+<td>A-4</td>
+<td>WESTPAC 31</td>
+<td align="right">16.675</td>
+<td align="right">106.667</td>
+<td>TROOPS</td>
+<td align="right">152</td>
+<td align="right">210.0</td>
+<td>2.75IN HE RKT</td>
+<td> </td>
+<td align="right">18</td>
+<td>A4F</td>
+<td>A4</td>
+<td> </td>
+<td> </td>
+<td> </td>
+<td align="right">76</td>
+<td align="right">6.0</td>
+<td>DIRECT AIR SUPPORT</td>
+<td>B0008</td>
+<td align="right">4</td>
+<td>IN COUNTRY</td>
+<td>D</td>
+<td>N09933</td>
+<td> </td>
+<td>ABN FWD AIR CNTL</td>
+<td>SOUTH VIETNAM</td>
+<td> </td>
+<td>16675N106667E</td>
+<td>DD.DDDN DDD.DDDE</td>
+<td>9996H</td>
+<td>MISSION: VS - CONTROL_TYPE: ABN FWD AIR CNTL - RTCOR: CORPS AREA I (IN-COUNTRY MISSIONS) OR RTE AREA 1 (OUT-OF-COUNTRY MISSIONS)</td>
+<td>XC</td>
+<td align="right">26299338</td>
+<td>KINETIC</td>
+<td align="right">0</td>
+<td align="right">0</td>
+<td> </td>
+<td> </td>
+<td> </td>
+<td align="right">220.0</td>
+<td align="right">-1</td>
+<td align="right">1968</td>
+</tr>
+<tr>
+<td align="right">404564</td>
+<td>UNITED STATES OF AMERICA</td>
+<td>USN</td>
+<td>1968-09-07</td>
+<td align="right">4757409</td>
+<td>CACTA6669</td>
+<td>A-7</td>
+<td>WESTPAC 66</td>
+<td align="right">18.977777</td>
+<td align="right">105.447222</td>
+<td>RADAR</td>
+<td align="right">0</td>
+<td align="right">1455.0</td>
+<td>MK-11/MK-12</td>
+<td> </td>
+<td align="right">57</td>
+<td>A7A</td>
+<td>A7</td>
+<td> </td>
+<td> </td>
+<td> </td>
+<td align="right">0</td>
+<td align="right">1.0</td>
+<td>STRIKE</td>
+<td>A0031</td>
+<td align="right">1</td>
+<td>ROLLING THUN</td>
+<td>N</td>
+<td>N09943</td>
+<td> </td>
+<td>TGT OF OPPORTUNITY</td>
+<td>NORTH VIETNAM</td>
+<td> </td>
+<td>185840N1052650E</td>
+<td>DDMMSSN DDDMMSSE</td>
+<td>9995H</td>
+<td>MISSION: RTIH57C - CONTROL_TYPE: TGT OF OPPORTUNITY - RTCOR: CORPS AREA III (IN-COUNTRY MISSIONS) OR RTE AREA 3 (OUT-OF-COUNTRY MISSIONS)</td>
+<td>WF</td>
+<td align="right">26299342</td>
+<td>KINETIC</td>
+<td align="right">0</td>
+<td align="right">10</td>
+<td> </td>
+<td> </td>
+<td> </td>
+<td align="right">1456.0</td>
+<td align="right">-1</td>
+<td align="right">1968</td>
+</tr>
+<tr>
+<td align="right">404565</td>
+<td>UNITED STATES OF AMERICA</td>
+<td>USAF</td>
+<td>1968-08-10</td>
+<td align="right">4757412</td>
+<td>CACTA6669</td>
+<td>A-37</td>
+<td>BIEN HOA</td>
+<td align="right">10.1113705</td>
+<td align="right">105.9828826</td>
+<td>CAMP</td>
+<td align="right">0</td>
+<td align="right">215.0</td>
+<td>7.62MM</td>
+<td> </td>
+<td align="right">6</td>
+<td>A37A</td>
+<td>A37</td>
+<td> </td>
+<td> </td>
+<td> </td>
+<td align="right">22</td>
+<td align="right">3.0</td>
+<td>AIR INTERDICTION</td>
+<td>JA009</td>
+<td align="right">2</td>
+<td>IN COUNTRY - SOUTH VIETNAM</td>
+<td>D</td>
+<td>JAPNU0</td>
+<td> </td>
+<td>ABN FWD AIR CNTL</td>
+<td>SOUTH VIETNAM</td>
+<td> </td>
+<td>48PXS08001780</td>
+<td>##ABC11112222</td>
+<td>9999N</td>
+<td>MISSION: VS08-5840 - CONTROL_TYPE: ABN FWD AIR CNTL - RTCOR: CORPS AREA IV (IN-COUNTRY MISSIONS) OR RTE AREA 4 (OUT-OF-COUNTRY MISSIONS)</td>
+<td>XS</td>
+<td align="right">26299343</td>
+<td>KINETIC</td>
+<td align="right">0</td>
+<td align="right">24</td>
+<td> </td>
+<td> </td>
+<td> </td>
+<td align="right">229.0</td>
+<td align="right">-1</td>
+<td align="right">1968</td>
+</tr>
+<tr>
+<td align="right">404572</td>
+<td>UNITED STATES OF AMERICA</td>
+<td>USAF</td>
+<td>1968-12-14</td>
+<td align="right">4757454</td>
+<td>CACTA6669</td>
+<td>F-4</td>
+<td>UBON AB</td>
+<td align="right">16.771</td>
+<td align="right">106.117</td>
+<td>SEGMENT\TRANS ROUTE</td>
+<td align="right">12</td>
+<td align="right">845.0</td>
+<td> </td>
+<td> </td>
+<td align="right">0</td>
+<td>F4D</td>
+<td>F4</td>
+<td> </td>
+<td> </td>
+<td> </td>
+<td align="right">22</td>
+<td align="right">1.0</td>
+<td>STRIKE</td>
+<td>JV006</td>
+<td align="right">2</td>
+<td>STEEL TIGER - BALDIE</td>
+<td>D</td>
+<td>JALJI0</td>
+<td> </td>
+<td>ABN FWD AIR CNTL</td>
+<td>LAOS</td>
+<td> </td>
+<td>16771N106117E</td>
+<td>DD.DDDN DDD.DDDE</td>
+<td> </td>
+<td>MISSION: SL349 - CONTROL_TYPE: ABN FWD AIR CNTL - RTCOR: RTE AREA F (OUT-OF-COUNTRY MISSIONS)</td>
+<td>XC</td>
+<td align="right">26299350</td>
+<td>KINETIC</td>
+<td align="right">0</td>
+<td align="right">0</td>
+<td> </td>
+<td> </td>
+<td> </td>
+<td align="right">846.0</td>
+<td align="right">-1</td>
+<td align="right">1968</td>
+</tr>
+</tbody></table>
+                </figure>
+            </section>
+        </article>
     </body>
 </html>
