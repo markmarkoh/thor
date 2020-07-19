@@ -423,7 +423,8 @@
                 <p>
                     With the data downloaded on my desktop, we'll filter down the 1.6 gigabyte CSV file with a single command.
                     <pre>
-awk -F, '$9 != "" && $40 != "NONKINETIC" && $12 != 0 {print}' thor_data_vietnam.csv > thor_filtered.csv
+awk -F, '$9 != "" && $40 != "NONKINETIC" && $12 != 0 {print}' \
+  thor_data_vietnam.csv > thor_filtered.csv
                     </pre>
                 </p>
                 <p>
