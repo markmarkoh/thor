@@ -462,11 +462,40 @@ awk -F, '$9 != "" && $40 != "NONKINETIC" && $12 != 0 {print}' thor_data_vietnam.
                     <script src="https://gist.github.com/markmarkoh/7d35df2e44153ef2edf6ed683a1a0b11.js"></script>
                 </p>
                 <p>I just print the output of that script to stdout, so to save a JSON file out of it, all you have to do is run <code>python make_h3.py > hexed.json</code>. The resulting file is 2.8 megabytes, which 53,330 distinct buckets.</p>
+                <p>
+                    Each entry in the JSON array has a <code>hex</code> key, which encodes the coordinates and bucket, and a <code>count</code> key, which is an aggregate of the number of rows that our Python script placed into this bucket.
+                </p>
             </section>
             <section>
                 <h2 id="presenting">Visualizing The Data</h2>
                 <p>
-                Now that we have the 1.95 gigabytes of data, filtered and aggregated down to 2.8 megabytes, we're ready to create a visualization.
+                    Now that we have the 1.95 gigabytes of data, filtered and aggregated down to 2.8 megabytes, we're ready to create a visualization.
+                </p>
+                <p>
+                    The Javascript library <a href="">deck.gl</a> is going to handle the heavy lifting here. It wraps Mapbox and allows you to define WebGL-friendly layers on top of the Mapbox tiles.  
+                </p>
+                <p>
+                    <span class="marginnote">
+                        <sup>5</sup>This is no coincidence, Uber's open-source team maintains both deck.gl and h3. 
+                    </span>
+                    By default, deck.gl ships with support for a large number of visualizations, including Hexgrids. Even more convienent, deck.gl comes with a H3 specific visualization layer, called <code>deck.H3HexagonLayer</code>. We'll use this layer to draw our visuals<sup>5</sup>
+                </p>
+                <script src="https://gist.github.com/markmarkoh/8f6988353e43a8bd78be7b61c42e8236.js"></script>
+            </section>
+            <section>
+                <h2>Conclusion</h2>
+                <p>
+                <span class="marginnote"><sup>6</sup>If not using Python 3, <code>python -m SimpleHTTPServer 8080</code></span>
+                Assuming that <code>hexed.json</code>, <code>map.html</code> and <code>index.js</code> are all in the same directory, you can run <code>python -m http.server 8080</code><sup>6</sup> and navigate to <a href="http://localhost:8080/map.html">localhost:8080/map.html</a> to see the map, or checkout <a href="https://github.com/markmarkoh/thor">the source code on Github</a>. 
+                </p>
+                <p>
+                You can see this visualization running live at <a href="map.html">here</a>. You can pan around, zoom in and out, and rotate the camera (ctrl-click-and-drag). 
+                </p>
+                <p>
+                The THOR dataset also covers WW1, WW2, and the Korean War. The Vietnam War data is the most exhaustive by far. The datasets have pretty limitless potential, a lot of incredibly interesting data is in there. This visualization is just scratching the surface. I hope you find this interesting enough to dig into the data yourself.
+                </p>
+                <p>
+                Thanks to Uber's team for deck.gl and h3, and Dave Liepmann for <a href="https://edwardtufte.github.io/tufte-css/">tufte.css</a>, and my employer <a href="https://data.world">data.world</a> for introducing me to this data and making it free to download and use.
                 </p>
             </section>
         </article>
