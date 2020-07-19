@@ -37,7 +37,7 @@ fetch('hexed.json')
 // create map
 const map = new deck.DeckGL({
     mapboxApiAccessToken: 'pk.eyJ1IjoidGhvci1tYXJrIiwiYSI6ImNrY3IzbnpxMzBnc3QyeXBkZmFicHhhNXQifQ.levs2UY_u0y9PcCLKJIpsA',
-    mapStyle: 'mapbox://styles/mapbox/outdoors-v11',
+    mapStyle: 'mapbox://styles/thor-mark/ckcs2f18w1fk41imj7dphkl04',
     initialViewState: {
         longitude: 106.65,
         latitude: 11.8,
