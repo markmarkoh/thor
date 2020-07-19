@@ -39,7 +39,7 @@
             </figure>
             </section>
             <section>
-                <h2 id="data">Data Preparation</h2>
+                <h2 id="data">Understanding The Data</h2>
                 <p>
                     The data we'll be using comes from the THOR dataset published by <a href="http://www.data.mil">data.mil</a>, the U.S. Defense Digital Service, available for download on <a href="https://data.world/datamil/vietnam-war-thor-data">data.world</a>.
                 </p>
@@ -47,7 +47,7 @@
                     The data is in CSV format, containing 4.6 million rows and 47 columns. It covers air missions by coalition forces from the years 1965 to 1975. U.S. military operations in Vietnam largely ended in 1973.
                 </p>
                 <p>
-                    The 4.6 million rows of data available for Vietnam contains all types of air missions - including bombings, recon, psy-ops, troop deployments, and supply drops. Our visualization is meant to cover bombings in particular, so we'll have to remove some data to isolate these mission types.
+                    The 4.6 million rows of data available for Vietnam contains all types of air missions - including bombings, recon, psy-ops, troop deployments, and supply drops. Our visualization is meant to cover bombings in particular, so we'll have to remove some data to isolate these mission types. The following is a sampling of the THOR data:
                 </p>
                 <figure class="table-figure fullwidth">
                     <table class="table">
@@ -402,6 +402,57 @@
 </tr>
 </tbody></table>
                 </figure>
+                <p>
+                    There are a handful of columns that we can use to infer which rows to include and which rows to filter. <code>numweaponsdelivered</code> looked interesting up front, but it has non-zero values for all different types of missions, including recon and troop deployments. 
+                </p>
+                <p>
+                    <code>mfunc_desc</code> has definitive values, like <code>STRIKE</code> and <code>AIR INTERDICTION</code>, but while digging through these values, there seemed to be a high cardinality in the number of values, and our filtering method would have to maintain that list.
+                </p>
+                <p>
+                    I ended up using a combination of <code>mfunc_desc_class</code> (either <code>KINETIC</code> or <code>NONKINETIC</code>), <code>numweaponsdelivered</code> when the value was greater than 0, and a check to exclude vlaues without target latitude and longitude in columns <code>tgtlatdd_ddd_wgs84</code> and <code>tgtlondd_ddd_wgs84</code>.
+                </p>
+            </section>
+            <section>
+                <h2 id="prep">Preparing The Data</h2>
+                <p>
+                <span class="marginnote">
+                    <sup>1</sup>AWK is a text processing command line program that's been around since 1977, more information is available at <a href="https://en.wikipedia.org/wiki/AWK">AWK Wiki</a> 
+                </span>
+                A fresh install of MacOS or Linux come well equiped with the commands we'll need to filter our data, namely using the <code>awk</code><sup>1</sup> program
+                </p>
+                <p>
+                    With the data downloaded on my desktop, we'll filter down the 1.6 gigabyte CSV file with a single command.
+                    <pre>
+awk -F, '$9 != "" && $40 != "NONKINETIC" && $12 != 0 {print}' thor_data_vietnam.csv > thor_filtered.csv
+                    </pre>
+                </p>
+                <p>
+                    The above command says: run awk, set the column separator to a comma, if column 9 (<code>numweaponsdelivered</code>) is not zero, and column 40 (<code>mfunc_desc_class</code>) is not <code>NONKINETIC</code>, and column 12 (<code>tgtlatdd_ddd_wgs84</code>) is not empty, print the line to a file named <code>thor_filtered.csv</code>.
+                </p>
+                <p>
+                <span class="marginnote">
+                    <sup>2</sup><code>wc -l</code> is the standard word count program UNIX-based systems ship with. The <code>-l</code> option asks for a count of lines.
+                </span>
+                Running <code>wc -l thor_filtered.csv</code><sup>2</sup> shows we've filtered the 4.6 million rows to 1.95 million rows, and the 1.6 gigabytes file is now 735 megabytes.
+                </p>
+            </section>
+            <section>
+                <h2 id="transform">Transforming The Data</h2>
+                <p>
+                <span class="marginnote">
+                    <sup>3</sup>For posterity, <code>gzip -c thor_filtered.csv | wc -c</code> shows 133 megabytes after gzipping.
+                </span>
+                The goal for this project is to be an interactive browser-based visualization, so shipping 735 megabytes of data is out of the question, even if <code>gzipping</code> the file pares down the size<sup>3</sup>.
+                <p>
+                <p>
+                    We need a way to aggregate this data before sending it to the browser. We know these 1.95 million rows all happen in a relatively small geographical area, so ideally we could find a way to cluster similar entries based on GPS coordinates. Since we'll be showing a hexgrid visualizatoin, each hex in the visualization might encompass many square kilometers.
+                </p>
+                <p>
+                    There exists a library called <a href="https://h3geo.org/">H3</a> that is perfect for our use-case. H3 is a "Hexagonal Hierarchical Geospatial Indexing System", which provides an API that takes a latitude, longitude, and a resolution, and returns back a string that represents the bucket for that entry. Increasing the resolution parameter increases the number of buckets.
+                </p>
+                <p>
+
+                </p>
             </section>
         </article>
     </body>
