@@ -480,7 +480,7 @@ awk -F, '$9 != "" && $40 != "NONKINETIC" && $12 != 0 {print}' thor_data_vietnam.
                     Now we can write a simple Python program that reads the 1.95 million row CSV file one row at a time, computes the H3 coordinate, and aggregates the values in a simple Python dictionary object, and then serializes that object out to JSON for easy browser consumption (browsers require third-party libraries to parse CSV).
                     <script src="https://gist.github.com/markmarkoh/7d35df2e44153ef2edf6ed683a1a0b11.js"></script>
                 </p>
-                <p>To create a JSON file based on this proram, all you have to do is run <code>python make_h3.py > hexed.json</code>. The resulting file is 2.8 megabytes, with 53,330 distinct buckets after having filtered out all of the values with only 1 entry to reduce some of the noise.</p>
+                <p>To create a JSON file based on this program, all you have to do is run <code>python make_h3.py > hexed.json</code>. The resulting file is 2.8 megabytes, with 53,330 distinct buckets after having filtered out all of the values with only 1 entry to reduce some of the noise.</p>
                 <p>
                     Each entry in the JSON array has a <code>hex</code> key, which encodes the coordinates and bucket, and a <code>count</code> key, which is an aggregate of the number of rows that our Python script placed into this bucket.
                 </p>
