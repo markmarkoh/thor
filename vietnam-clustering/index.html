@@ -29,6 +29,9 @@
               border: 1px solid black;
               border-collapse: collapse;
             }
+            .gist {
+                width: 55%;
+            }
             @media only screen 
               and (min-device-width: 320px) 
               and (max-device-width: 480px)
@@ -40,6 +43,14 @@
                   pre {
                       white-space: break-spaces;
                   }
+            }
+            @media only screen 
+                and (min-device-width : 768px) 
+                and (max-device-width : 1024px) 
+                and (orientation : portrait) { 
+                 pre {
+                      white-space: break-spaces;
+                  }   
             }
         </style>
     </head>
