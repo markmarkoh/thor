@@ -32,7 +32,7 @@
         </style>
     </head>
     <body>
-        <a target="_blank"rticle>
+        <tat target="_blank"rticle>
             <h1>Vietnam Combat Map in 70 lines of code</h1>
             <p class="subtitle">Mark Di Marco</p>
             <section>
@@ -469,7 +469,7 @@ awk -F, '$9 != "" && $40 != "NONKINETIC" && $12 != 0 {print}' \
                     Now we can write a simple Python program that reads the 1.95 million row CSV file one row at a time, computes the H3 coordinate, and aggregates the values in a simple Python dictionary object, and then serializes that object out to JSON for easy browser consumption (browsers require third-party libraries to parse CSV).
                     <script src="https://gist.github.com/markmarkoh/7d35df2e44153ef2edf6ed683a1a0b11.js"></script>
                 </p>
-                <p>To create a JSON file based on this proram, all you have to do is run <code>python make_h3.py > hexed.json</code>. The resulting file is 2.8 megabytes, which 53,330 distinct buckets after having filtered out all of the values with only 1 entry to reduce some noise.</p>
+                <p>To create a JSON file based on this proram, all you have to do is run <code>python make_h3.py > hexed.json</code>. The resulting file is 2.8 megabytes, with 53,330 distinct buckets after having filtered out all of the values with only 1 entry to reduce some of the noise.</p>
                 <p>
                     Each entry in the JSON array has a <code>hex</code> key, which encodes the coordinates and bucket, and a <code>count</code> key, which is an aggregate of the number of rows that our Python script placed into this bucket.
                 </p>
@@ -491,7 +491,7 @@ awk -F, '$9 != "" && $40 != "NONKINETIC" && $12 != 0 {print}' \
                 <script src="https://gist.github.com/markmarkoh/8f6988353e43a8bd78be7b61c42e8236.js"></script>
             </section>
             <section>
-                <h2>Conclusion</h2>
+                <h2>Conclusion & Acknowledgements</h2>
                 <p>
                 <span class="marginnote"><sup>6</sup>If not using Python 3, <code>python -m SimpleHTTPServer 8080</code></span>
                 Assuming that <code>hexed.json</code>, <code>map.html</code> and <code>index.js</code> are all in the same directory, you can run <code>python -m http.server 8080</code><sup>6</sup> and navigate to <a target="_blank" href="http://localhost:8080/map.html">localhost:8080/map.html</a> to see the map, or checkout <a target="_blank" href="https://github.com/markmarkoh/thor">the source code on Github</a>. 
