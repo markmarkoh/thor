@@ -489,7 +489,7 @@ awk -F, '$9 != "" && $40 != "NONKINETIC" && $12 != 0 {print}' thor_data_vietnam.
                 </p>
                 <p>
                 <span class="marginnote">
-                    <sup>4</sup> H3's bucketing algorithm is undestandbly lossy. Running the reverse command, <code>h3.h3_to_geo</code> won't give you the same coordinates you put in, but as you increase the resolution, the results will get closer and closer.
+                    <sup>4</sup> H3's bucketing algorithm is understandbly lossy. Running the reverse command, <code>h3.h3_to_geo</code> won't give you the same coordinates you put in, but as you increase the resolution, the results will get closer and closer.
                 </span>
                 Using H3's Python binding (<code>pip install h3</code>), we can test it with <code>h3.geo_to_h3(0, 0, 5)</code>, outputs <code>'85754e67fffffff'</code>
                 and <code>h3.geo_to_h3(14, -100, 9)</code> which outputs <code>'896da150217fffff'</code><sup>4</sup>
